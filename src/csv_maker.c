@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -25,6 +26,63 @@
 #include <s7lib.h>
 #include "include/controler.h"
 #include "include/config.h"
+
+
+
+static char * time_string(const char * format)
+{
+	char * time_string = (char*) malloc(sizeof(char)*23);
+
+    time_t my_time;
+    struct tm* time_info;
+
+    time(&my_time);
+    time_info = localtime(&my_time);
+    strftime(time_string, 23, format, time_info);
+
+	return time_string;
+}
+
+static char * generate_log_name(char * csv_path, char * csv_name)
+{
+	time_t current_time;
+	time(&current_time);
+  	struct tm tm = * localtime(&current_time);
+	return c_string_format("%s/%s-%d-%02d-%02d.log", csv_path, csv_name, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+}
+
+static void save_log(char * format, ...)
+{
+	va_list params;
+	va_start(params, format);
+
+	char * log_file_name = generate_log_name("log", "debug-log");
+
+	FILE * log_file = fopen(log_file_name, "a");
+
+	char * time_stamp = time_string("%d.%m.%y - %H:%M:%S");
+	printf("%s - ", time_stamp);
+	vprintf(format, params);
+	printf("\n");
+
+	fflush(stdout);
+
+	if(log_file != NULL)
+	{
+		fprintf(log_file, "%s - ", time_stamp);
+		vfprintf(log_file, format, params);
+		fprintf(log_file, "\n");
+		fflush(log_file);
+		fclose(log_file);
+	}
+
+	free(log_file_name);
+	free(time_stamp);
+
+	va_end(params);
+}
+
+
 
 
 bool is_path_valid(char * path)
@@ -74,18 +132,21 @@ void main_loop(s7lib * s7lib_ref, char * path)
 	{
 		while(true)
   		{
-    	   	uint8_t * buffer =  s7lib_read(s7lib_ref, 0, DB_SIZE);
+    	   	if(s7lib_read_bool(s7lib_ref, 0, 0) == true)
+    	   	{
+    	   		save_log("Saving csv record to %s", CSV_NAME);
 
-    	   	if(buffer != NULL)
-    	   	{
-    	   		buffer = controler_check_store_request(buffer, path, CSV_NAME, CSV_SEPARATOR);
-    	   		s7lib_write(s7lib_ref, buffer, 0, 69);
-    	   		free(buffer);
-    	   	 	printf("%s\n", (char*) buffer);
-    	   	}
-    	   	else
-    	   	{
-    	   		printf("Can't read from PLC\n");
+    	   		uint8_t * buffer =  s7lib_read(s7lib_ref, 0, DB_SIZE);
+    	   		if(buffer != NULL)
+    	   		{
+    	   			buffer = controler_check_store_request(buffer, path, CSV_NAME, CSV_SEPARATOR);
+    	   			s7lib_write(s7lib_ref, buffer, 0, 69);
+    	   			free(buffer);
+    	   		}
+    	   		else
+    	   		{
+    	   	    	save_log("Can't read from PLC\n");
+    	   	    }
     	   	}
 
 			fflush(stdout);
@@ -94,7 +155,7 @@ void main_loop(s7lib * s7lib_ref, char * path)
 	}
 	else
 	{
-		printf("CSV path is not valid!\n");
+		save_log("CSV path is not valid!\n");
 	}
 }
 

@@ -31,7 +31,7 @@ static bool controler_write_to_file(uint8_t * buffer, char * csv_path, char sepa
     if(access(csv_path, F_OK) != -1)
 	{
     	bool return_value = csv_io_write_to_file(csv_path, "\n%s", csv_line);
-		printf("%s\n", csv_line);
+		//printf("%s\n", csv_line);
 
 		free(csv_line);
 
@@ -42,7 +42,7 @@ static bool controler_write_to_file(uint8_t * buffer, char * csv_path, char sepa
 		char * csv_description_header = controler_compose_csv_description_header(separator);
 		char * csv_unit_header = controler_compose_csv_unit_header(separator);
 
-		printf("%s\n%s\n%s\n", csv_description_header, csv_unit_header, csv_line);
+		//printf("%s\n%s\n%s\n", csv_description_header, csv_unit_header, csv_line);
 
       	bool return_value = csv_io_write_to_file(csv_path, "%s\n%s\n%s", csv_description_header, csv_unit_header, csv_line);
 
