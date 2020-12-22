@@ -100,7 +100,7 @@ char * cp_get_interval_from_primering_util_gluing(uint8_t * buffer)
 
 char * cp_get_time_from_last_dispense(uint8_t * buffer)
 {
-	return cp_get_time_string(buffer, 140);
+	return cp_get_time_string(buffer, 134);
 }
 
 char * cp_get_timestamp_of_glue_bead_application(uint8_t * buffer)
@@ -209,27 +209,35 @@ char * cp_get_mixer_tube_life(uint8_t * buffer)
 
 char * cp_get_robot_completed_cycle_without_fault(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 4, "true", "false");
+	return cp_get_flag(buffer, 162, 5, "true", "false");
 }
 
 char * cp_get_dispense_unit_completed_cycle_without_fault(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 5, "true", "false");
+	return cp_get_flag(buffer, 162, 6, "true", "false");
 }
 
 char * cp_get_rotary_unit_completed_cycle_without_fault(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 6, "true", "false");
+	return cp_get_flag(buffer, 162, 7, "true", "false");
 }
 
 char * cp_get_adhesive_application_complete_summary(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 7, "true", "false");
+	return cp_get_flag(buffer, 163, 0, "true", "false");
+}
+
+bool cp_get_glue_application_inspection_enable(uint8_t * buffer)
+{
+	return s7lib_parser_read_bool(buffer, 162, 3);
 }
 
 char * cp_get_bead_check_laser_sensor(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 108, 2, "PASS", "FAIL");
+	if(cp_get_glue_application_inspection_enable(buffer) == true)
+		return cp_get_flag(buffer, 162, 2, "PASS", "FAIL");
+
+	return c_string_init("NA");
 }
 
 char * cp_get_humidity(uint8_t * buffer)
@@ -295,10 +303,10 @@ static char * cp_get_flag(uint8_t * buffer, uint32_t byte_index, uint8_t bit_ind
 
 static bool cp_get_primer_application_enable(uint8_t * buffer)
 {
-	return s7lib_parser_read_bool(buffer, 122, 1);
+	return s7lib_parser_read_bool(buffer, 163, 2);
 }
 
 static bool cp_get_primer_inspection_enable(uint8_t * buffer)
 {
-	return s7lib_parser_read_bool(buffer, 122,0);
+	return s7lib_parser_read_bool(buffer, 163,3);
 }

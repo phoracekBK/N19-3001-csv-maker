@@ -140,8 +140,8 @@ void main_loop(s7lib * s7lib_ref, char * path)
     	   		if(buffer != NULL)
     	   		{
     	   			buffer = controler_check_store_request(buffer, path, CSV_NAME, CSV_SEPARATOR);
-    	   			s7lib_write(s7lib_ref, buffer, 0, 69);
-    	   			free(buffer);
+    	   			s7lib_write_bool(s7lib_ref, 0,0, false);
+     	   			free(buffer);
     	   		}
     	   		else
     	   		{
