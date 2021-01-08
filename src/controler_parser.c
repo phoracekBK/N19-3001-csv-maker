@@ -27,7 +27,7 @@ char * cp_get_vehicle_model(uint8_t * buffer)
 {
   char * vehicle_model = malloc(sizeof(char)*2);
 
-  vehicle_model[0] = buffer[62];
+  vehicle_model[0] = buffer[62]+48;
   vehicle_model[1] = '\0';
 
   return vehicle_model;
