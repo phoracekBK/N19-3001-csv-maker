@@ -137,16 +137,21 @@ void main_loop(s7lib * s7lib_ref, char * path)
     	   		save_log("Saving csv record to %s", CSV_NAME);
 
     	   		uint8_t * buffer =  s7lib_read(s7lib_ref, 0, DB_SIZE);
+
     	   		if(buffer != NULL)
     	   		{
     	   			buffer = controler_check_store_request(buffer, path, CSV_NAME, CSV_SEPARATOR);
-    	   			s7lib_write_bool(s7lib_ref, 0,0, false);
+    	   			s7lib_write_bool(s7lib_ref, 0,1, true);
      	   			free(buffer);
     	   		}
     	   		else
     	   		{
     	   	    	save_log("Can't read from PLC\n");
     	   	    }
+    	   	}
+    	   	else
+    	   	{
+    	   		s7lib_write_bool(s7lib_ref, 0,1, false);
     	   	}
 
 			fflush(stdout);
