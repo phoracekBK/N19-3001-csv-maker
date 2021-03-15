@@ -18,6 +18,15 @@ char * cp_get_vehicle_number(uint8_t * buffer)
 	return vehicle_number;
 }
 
+char * cp_get_job_number(uint8_t * buffer)
+{
+	char * job_number = malloc(sizeof(char) * 10);
+
+	memcpy(job_number, (buffer+2), 10);
+
+	return job_number;
+}
+
 char * cp_get_rear_window_type(uint8_t * buffer)
 {
   return s7lib_parser_read_string(buffer, 42, 18);

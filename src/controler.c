@@ -61,6 +61,8 @@ static char * controler_compose_csv_description_header(char separator)
 {
 	char * line = NULL;
 
+	line = c_string_add_constant(line, "Job number");
+	line = c_string_add_character(line, separator);
 	line = c_string_add_constant(line, "Vehicle number");
 	line = c_string_add_character(line, separator);
 	line = c_string_add_constant(line, "Rear window type");
@@ -143,6 +145,8 @@ static char * controler_compose_csv_unit_header(char separator)
 	line = c_string_add_constant(line, "");
 	line = c_string_add_character(line, separator);
 	line = c_string_add_constant(line, "");
+	line = c_string_add_character(line, separator);
+	line = c_string_add_constant(line, "");
 	line = c_string_add_character(line, separator);	
 	line = c_string_add_constant(line, "");
 	line = c_string_add_character(line, separator);
@@ -216,6 +220,8 @@ static char * controler_compose_csv_line(uint8_t * buffer, char separator)
 {
 	char * line = NULL;
 
+	line = c_string_add(line, cp_get_job_number(buffer));
+	line = c_string_add_character(line, separator);
 	line = c_string_add(line, cp_get_vehicle_number(buffer));
 	line = c_string_add_character(line, separator);
 	line = c_string_add(line,cp_get_rear_window_type(buffer));

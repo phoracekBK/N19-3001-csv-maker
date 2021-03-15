@@ -82,9 +82,6 @@ static void save_log(char * format, ...)
 	va_end(params);
 }
 
-
-
-
 bool is_path_valid(char * path)
 {
 	if(access(path, F_OK) != 0)
@@ -130,9 +127,13 @@ void main_loop(s7lib * s7lib_ref, char * path)
 {
 	if(is_path_valid(path) == true)
 	{
+		bool store_request_trigger = false;
+
 		while(true)
   		{
-    	   	if(s7lib_read_bool(s7lib_ref, 0, 0) == true)
+			bool store_request = s7lib_read_bool(s7lib_ref, 0, 0);
+
+    	   	if( store_request == true && store_request_trigger == false)
     	   	{
     	   		save_log("Saving csv record to %s", CSV_NAME);
 
@@ -156,12 +157,16 @@ void main_loop(s7lib * s7lib_ref, char * path)
 
 			fflush(stdout);
     	   	sleep(1);
+
+			store_request_trigger = store_request;
     	}
 	}
 	else
 	{
 		save_log("CSV path is not valid!\n");
 	}
+
+	
 }
 
 void main_loop_silence_mode(s7lib * s7lib_ref, char * path)
