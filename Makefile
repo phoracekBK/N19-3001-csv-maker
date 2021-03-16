@@ -5,7 +5,13 @@ SRC=src
 
 
 all:
-	cc ${SRC}/csv_maker.c ${SRC}/controler.c ${SRC}/controler_parser.c ${SRC}/csv_io.c ${OPT} -o ${RELEASE_PATH}/${OUTPUT}
+	clear
+	cc ${SRC}/csv_maker.c ${SRC}/controler.c ${SRC}/controler_parser.c ${SRC}/csv_item.c ${SRC}/csv_io.c ${OPT} -o ${RELEASE_PATH}/${OUTPUT}
+
+run:
+	clear
+	cc ${SRC}/csv_maker.c ${SRC}/controler.c ${SRC}/controler_parser.c ${SRC}/csv_item.c ${SRC}/csv_io.c ${OPT} -o ${RELEASE_PATH}/${OUTPUT}
+	${RELEASE_PATH}/${OUTPUT}
 
 clean:
 	rm -vf *.o

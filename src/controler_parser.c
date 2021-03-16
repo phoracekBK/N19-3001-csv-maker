@@ -20,9 +20,10 @@ char * cp_get_vehicle_number(uint8_t * buffer)
 
 char * cp_get_job_number(uint8_t * buffer)
 {
-	char * job_number = malloc(sizeof(char) * 10);
+	char * job_number = malloc(sizeof(char) * 11);
 
-	memcpy(job_number, (buffer+2), 10);
+	memcpy(job_number, buffer+2, 10);
+	job_number[10] = 0;
 
 	return job_number;
 }

@@ -1,22 +1,21 @@
 #include "include/controler.h"
 #include "include/controler_parser.h"
 #include "include/csv_io.h"
+#include "include/csv_item.h"
+#include "include/config.h"
+#include <c_linked_list.h>
 
 static bool controler_write_to_file(uint8_t *, char *, char);
 static bool controler_store_csv_line(uint8_t *, char *, char*, char);
-static char * controler_compose_csv_unit_header(char);
-static char * controler_compose_csv_description_header(char);
-static char * controler_compose_csv_line(uint8_t *, char);
+static c_linked_list * controler_compose_csv(uint8_t * buffer);
+static char * controler_compose_csv_line(c_linked_list *, char *(*fce_ptr)(csv_item*), char);
 
-uint8_t * controler_check_store_request(uint8_t * buffer, char * csv_path, char * csv_name, char separator)
+bool controler_check_store_request(uint8_t * buffer, char * csv_path, char * csv_name, char separator)
 {
-    if(s7lib_parser_read_bool(buffer, 0, 0) == true)
-    {
-        if(controler_store_csv_line(buffer, csv_path, csv_name, separator) == true)
-          return s7lib_parser_write_bool(buffer, 0, 0, false);
-    }
+    if(controler_store_csv_line(buffer, csv_path, csv_name, separator) == true)
+          return true;
 
-    return buffer;
+    return false;
 }
 
 
@@ -26,26 +25,27 @@ static bool controler_write_to_file(uint8_t * buffer, char * csv_path, char sepa
 {
   if(buffer != NULL)
   {
-	char * csv_line = controler_compose_csv_line(buffer, separator);
+	c_linked_list * csv_struct = controler_compose_csv(buffer);
+
+	char * csv_line = controler_compose_csv_line(csv_struct, csv_item_get_value, separator);
 
     if(access(csv_path, F_OK) != -1)
-	{
+	{	
     	bool return_value = csv_io_write_to_file(csv_path, "\n%s", csv_line);
-		//printf("%s\n", csv_line);
 
 		free(csv_line);
+		csv_struct = c_linked_list_clear_with_release(csv_struct, csv_item_finalize);
 
 		return return_value;
 	}
     else
 	{
-		char * csv_description_header = controler_compose_csv_description_header(separator);
-		char * csv_unit_header = controler_compose_csv_unit_header(separator);
-
-		//printf("%s\n%s\n%s\n", csv_description_header, csv_unit_header, csv_line);
+		char * csv_description_header = controler_compose_csv_line(csv_struct, csv_item_get_name, separator);
+		char * csv_unit_header = controler_compose_csv_line(csv_struct, csv_item_get_unit, separator);
 
       	bool return_value = csv_io_write_to_file(csv_path, "%s\n%s\n%s", csv_description_header, csv_unit_header, csv_line);
 
+		csv_struct = c_linked_list_clear_with_release(csv_struct, csv_item_finalize);
 		free(csv_description_header);
 		free(csv_unit_header);
 		free(csv_line);
@@ -57,242 +57,64 @@ static bool controler_write_to_file(uint8_t * buffer, char * csv_path, char sepa
   return false;
 }
 
-static char * controler_compose_csv_description_header(char separator)
+static c_linked_list * controler_add_csv_item(c_linked_list * csv_struct, char * name, char * unit, char * value)
 {
-	char * line = NULL;
-
-	line = c_string_add_constant(line, "Job number");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Vehicle number");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Rear window type");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Vehicle model");
-	line = c_string_add_character(line, separator);	
-	line = c_string_add_constant(line, "Window id");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Time from primer application");
-    line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line,	"Primer detection with vision");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Bead check pass/fail area");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Primer curring rack");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Time stamp when primer flashoff complete");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Time interval from primer application util glue application finish");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Time from last dispense");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Timestamp of glue bead application");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Robot_finish time glue bead application");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Time interval from glue bead application util glass taken out from output station");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Barrel expiration ok A");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Adhesive batch id A");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Adhesive serial A");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Material dispensed A");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Pistol temperature min");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Pistol temperature actual");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Pistol temperature max");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Pot A temperature min");
-    line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Pot A temperature actual");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Pot A temperature max");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Barrel expire ok B");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Adhesive batch id B");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Adhesive serial B");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Material dispensed B");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Application ratio");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Mix tube life");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Robot completed cycle without fault");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Dispense unit completed cycle without fault");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Rotary unit completed cycle without fault");
-	line = c_string_add_character(line, separator);
-    line = c_string_add_constant(line, "Adhesive application process complete summery");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "Bead check laser sensor");
-
-	return line;	
+	return c_linked_list_add_as_following(csv_struct, csv_item_new(name, unit, value));
 }
 
-static char * controler_compose_csv_unit_header(char separator)
-{
-	char * line = NULL;
-
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);	
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-    line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "s");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "s");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "ml");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "°C");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "°C");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "°C");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "°C");
-    line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "°C");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "°C");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "ml");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "min");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-    line = c_string_add_constant(line, "");
-	line = c_string_add_character(line, separator);
-	line = c_string_add_constant(line, "");
-
-	return line;
-
+static c_linked_list * controler_compose_csv(uint8_t * buffer)
+{	
+	c_linked_list * csv_struct = NULL;
+	
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Job number"), c_string_init(""), cp_get_job_number(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Vehicle number"), c_string_init(""), cp_get_vehicle_number(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Rear window type"), c_string_init(""), cp_get_rear_window_type(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Vehicle model"), c_string_init(""), cp_get_vehicle_model(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Window id"), c_string_init(""), cp_get_window_id(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Time from primer application"), c_string_init(""), cp_get_time_from_primer_application(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Primer detection with vision"), c_string_init(""), cp_get_primer_detection_with_vision_ok(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Bead check pass/fail area"), c_string_init(""), cp_get_bead_check_pass_fail_area(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Primer curring rack"), c_string_init(""), cp_get_primer_curring_rack(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Time stamp when primer flashoff complete"), c_string_init(""), cp_get_time_primer_flashoff_complete(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Time interval from primer application util glue application finish"), c_string_init("s"), cp_get_interval_from_primering_util_gluing(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Time from last dispense"), c_string_init(""), cp_get_time_from_last_dispense(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Timestamp of glue bead application"), c_string_init(""), cp_get_timestamp_of_glue_bead_application(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Robot finish time glue bead application"), c_string_init(""), cp_get_robot_finish_time_glue_bead_application(buffer));	
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Time interval from glue bead application util glass taken out from output station"), c_string_init("s"), cp_get_interval_from_glue_application_util_output(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Barrel expiration ok A"), c_string_init(""), cp_get_barrel_expire_ok_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Adhesive batch id A"), c_string_init(""), cp_get_adhesive_batch_id_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Adhesive serial A"), c_string_init(""), cp_get_adhesive_serial_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Material dispensed A"), c_string_init("ml"), cp_get_material_dispensed_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Pistol temperature min"), c_string_init("°C"), cp_get_pistol_temperature_min_value(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Pot A temperature actual"), c_string_init("°C"), cp_get_pistol_temperature(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Pot A temperature max"), c_string_init("°C"), cp_get_pistol_temperature_max_value(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Pot A temperature min"), c_string_init("°C"), cp_get_pot_temperature_min_value_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Pot A temperature actual"), c_string_init("°C"), cp_get_pot_temperature_actual_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Pot A temperature max"), c_string_init("°C"), cp_get_pot_temperature_max_value_a(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Barrel expire ok B"), c_string_init(""), cp_get_barrel_expire_ok_b(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Adhesive batch id B"), c_string_init(""), cp_get_adhesive_batch_b(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Adhesive serial B"), c_string_init(""), cp_get_adhesive_serial_b(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Material dispensed B"), c_string_init("ml"), cp_get_material_dispensed_b(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Application ratio"), c_string_init(""), cp_get_application_ratio(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Mix tube life"), c_string_init("min"), cp_get_mixer_tube_life(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Robot completed cycle without fault"), c_string_init(""), cp_get_robot_completed_cycle_without_fault(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Dispense unit completed cycle without fault"), c_string_init(""), cp_get_dispense_unit_completed_cycle_without_fault(buffer));	
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Rotary unit completed cycle without fault"), c_string_init(""), cp_get_rotary_unit_completed_cycle_without_fault(buffer));	
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Adhesive application process complete summery"), c_string_init(""), cp_get_adhesive_application_complete_summary(buffer));
+	csv_struct = controler_add_csv_item(csv_struct, c_string_init("Bead check laser sensor"), c_string_init(""), cp_get_bead_check_laser_sensor(buffer));	
+		
+	return c_linked_list_find_first(csv_struct);
 }
 
-static char * controler_compose_csv_line(uint8_t * buffer, char separator)
+static char * controler_compose_csv_line(c_linked_list* csv_struct, char *(*fce_ptr)(csv_item*), char separator)
 {
-	char * line = NULL;
-
-	line = c_string_add(line, cp_get_job_number(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_vehicle_number(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_rear_window_type(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_vehicle_model(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_window_id(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_time_from_primer_application(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_primer_detection_with_vision_ok(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_bead_check_pass_fail_area(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_primer_curring_rack(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_time_primer_flashoff_complete(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_interval_from_primering_util_gluing(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_time_from_last_dispense(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_timestamp_of_glue_bead_application(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_robot_finish_time_glue_bead_application(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_interval_from_glue_application_util_output(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_barrel_expire_ok_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_adhesive_batch_id_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_adhesive_serial_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_material_dispensed_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line,cp_get_pistol_temperature_min_value(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_pistol_temperature(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_pistol_temperature_max_value(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_pot_temperature_min_value_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_pot_temperature_actual_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_pot_temperature_max_value_a(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_barrel_expire_ok_b(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_adhesive_serial_b(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_adhesive_serial_b(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_material_dispensed_b(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_application_ratio(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_mixer_tube_life(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_robot_completed_cycle_without_fault(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_dispense_unit_completed_cycle_without_fault(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_rotary_unit_completed_cycle_without_fault(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_adhesive_application_complete_summary(buffer));
-	line = c_string_add_character(line, separator);
-	line = c_string_add(line, cp_get_bead_check_laser_sensor(buffer));
-
-  	return line;
+	if(csv_struct != NULL)
+		if(c_linked_list_is_last(csv_struct) == true)
+			return c_string_concat(fce_ptr(c_linked_list_get_data(csv_struct)), controler_compose_csv_line(c_linked_list_next(csv_struct), fce_ptr, separator));
+		else
+			return c_string_concat(c_string_concat_character(fce_ptr(c_linked_list_get_data(csv_struct)), separator), controler_compose_csv_line(c_linked_list_next(csv_struct), fce_ptr, separator));
+	else
+		return NULL;	
 }
 
 static bool controler_store_csv_line(uint8_t * buffer, char * csv_path, char * csv_name, char separator)

@@ -53,33 +53,42 @@ static char * generate_log_name(char * csv_path, char * csv_name)
 
 static void save_log(char * format, ...)
 {
-	va_list params;
-	va_start(params, format);
-
 	char * log_file_name = generate_log_name("log", "debug-log");
 
 	FILE * log_file = fopen(log_file_name, "a");
 
-	char * time_stamp = time_string("%d.%m.%y - %H:%M:%S");
-	printf("%s - ", time_stamp);
-	vprintf(format, params);
-	printf("\n");
-
-	fflush(stdout);
-
 	if(log_file != NULL)
 	{
-		fprintf(log_file, "%s - ", time_stamp);
-		vfprintf(log_file, format, params);
-		fprintf(log_file, "\n");
-		fflush(log_file);
-		fclose(log_file);
+		va_list params;
+		va_start(params, format);
+
+		char * time_stamp = time_string("%d.%m.%y - %H:%M:%S");
+		printf("%s - ", time_stamp);
+		vprintf(format, params);
+		printf("\n");
+
+		fflush(stdout);
+
+		if(log_file != NULL)
+		{
+			fprintf(log_file, "%s - ", time_stamp);
+			vfprintf(log_file, format, params);
+			fprintf(log_file, "\n");
+			fflush(log_file);
+			fclose(log_file);
+		}
+
+		free(log_file_name);
+		free(time_stamp);
+
+		va_end(params);		
 	}
-
-	free(log_file_name);
-	free(time_stamp);
-
-	va_end(params);
+	else
+	{
+		printf("Can't open log file!\n");
+		fflush(stdout);
+	}
+	
 }
 
 bool is_path_valid(char * path)
@@ -128,6 +137,10 @@ void main_loop(s7lib * s7lib_ref, char * path)
 	if(is_path_valid(path) == true)
 	{
 		bool store_request_trigger = false;
+		save_log("Entering to main loop");
+
+		s7lib_write_bool(s7lib_ref, 0,1, false);
+		s7lib_write_bool(s7lib_ref, 0,2, false);
 
 		while(true)
   		{
@@ -135,14 +148,17 @@ void main_loop(s7lib * s7lib_ref, char * path)
 
     	   	if( store_request == true && store_request_trigger == false)
     	   	{
-    	   		save_log("Saving csv record to %s", CSV_NAME);
+    	   		save_log("Saving csv record into %s", CSV_NAME);
 
     	   		uint8_t * buffer =  s7lib_read(s7lib_ref, 0, DB_SIZE);
 
     	   		if(buffer != NULL)
     	   		{
-    	   			buffer = controler_check_store_request(buffer, path, CSV_NAME, CSV_SEPARATOR);
-    	   			s7lib_write_bool(s7lib_ref, 0,1, true);
+					if (controler_check_store_request(buffer, path, CSV_NAME, CSV_SEPARATOR) == true)
+    	   				s7lib_write_bool(s7lib_ref, 0,1, true);
+					else
+						s7lib_write_bool(s7lib_ref, 0,2, true);
+
      	   			free(buffer);
     	   		}
     	   		else
@@ -150,13 +166,15 @@ void main_loop(s7lib * s7lib_ref, char * path)
     	   	    	save_log("Can't read from PLC\n");
     	   	    }
     	   	}
-    	   	else
-    	   	{
-    	   		s7lib_write_bool(s7lib_ref, 0,1, false);
-    	   	}
+			else if(store_request == false && store_request_trigger == true)
+			{
+				s7lib_write_bool(s7lib_ref, 0,1, false);
+				s7lib_write_bool(s7lib_ref, 0,2, false);
+			}
+			
 
 			fflush(stdout);
-    	   	sleep(1);
+    	   	sleep(0.5);
 
 			store_request_trigger = store_request;
     	}
@@ -164,9 +182,7 @@ void main_loop(s7lib * s7lib_ref, char * path)
 	else
 	{
 		save_log("CSV path is not valid!\n");
-	}
-
-	
+	}	
 }
 
 void main_loop_silence_mode(s7lib * s7lib_ref, char * path)
@@ -195,6 +211,7 @@ int main(int argv, char ** argc)
   	else
   	{
     	  printf("S7lib initialization error!\n");
+		  fflush(stdout);
   	}
 
   return 0;
