@@ -35,12 +35,12 @@ char * cp_get_rear_window_type(uint8_t * buffer)
 
 char * cp_get_vehicle_model(uint8_t * buffer)
 {
-  char * vehicle_model = malloc(sizeof(char)*2);
-
-  vehicle_model[0] = buffer[62]+48;
-  vehicle_model[1] = '\0';
-
-  return vehicle_model;
+	if(buffer[62] == T7_VEHICLE_MODEL_CONSTANT)
+  		return c_string_init("T7");
+	else if(buffer[62] == ID_BUZZ_VEHICLE_MODEL_CONSTANT)
+		return c_string_init("ID.BUZZ");
+	else 
+		return c_string_init("NA");
 }
 
 char * cp_get_window_id(uint8_t * buffer)

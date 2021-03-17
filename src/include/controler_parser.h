@@ -5,6 +5,7 @@
 #include <math.h>
 #include <c_string.h>
 #include <s7lib_parser.h>
+#include "config.h"
 
 char * cp_get_job_number(uint8_t *);
 char * cp_get_vehicle_number(uint8_t *);
