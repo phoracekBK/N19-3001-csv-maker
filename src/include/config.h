@@ -5,10 +5,10 @@
 #define RACK 0
 #define SLOT 1
 #define DB_INDEX 18
-#define DB_SIZE 276
+#define DB_SIZE 275
 
 #define CSV_PATH "./"
-#define CSV_NAME "InlineCubing"
+#define CSV_NAME "Klebezelle"
 #define CSV_SEPARATOR ';'
 
 #define T7_VEHICLE_MODEL_CONSTANT 7

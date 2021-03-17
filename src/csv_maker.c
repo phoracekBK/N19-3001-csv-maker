@@ -150,7 +150,7 @@ void main_loop(s7lib * s7lib_ref, char * path)
     	   	{
     	   		save_log("Saving csv record into %s", CSV_NAME);
 
-    	   		uint8_t * buffer =  s7lib_read(s7lib_ref, 0, DB_SIZE);
+    	   		uint8_t * buffer =  s7lib_read(s7lib_ref, 1, DB_SIZE);
 
     	   		if(buffer != NULL)
     	   		{

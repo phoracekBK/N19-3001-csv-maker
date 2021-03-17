@@ -12,7 +12,7 @@ static bool cp_get_primer_inspection_enable(uint8_t * buffer);
 char * cp_get_vehicle_number(uint8_t * buffer)
 {
 	char * vehicle_number = malloc(sizeof(char)*14);
-	memcpy(vehicle_number, (char*) (buffer+28), 13);
+	memcpy(vehicle_number, (char*) (buffer+27), 13);
 	vehicle_number[13] = 0;
 
 	return vehicle_number;
@@ -22,7 +22,7 @@ char * cp_get_job_number(uint8_t * buffer)
 {
 	char * job_number = malloc(sizeof(char) * 11);
 
-	memcpy(job_number, buffer+2, 10);
+	memcpy(job_number, buffer+1, 10);
 	job_number[10] = 0;
 
 	return job_number;
@@ -30,14 +30,14 @@ char * cp_get_job_number(uint8_t * buffer)
 
 char * cp_get_rear_window_type(uint8_t * buffer)
 {
-  return s7lib_parser_read_string(buffer, 42, 18);
+  return s7lib_parser_read_string(buffer, 41, 18);
 }
 
 char * cp_get_vehicle_model(uint8_t * buffer)
 {
-	if(buffer[62] == T7_VEHICLE_MODEL_CONSTANT)
+	if(buffer[61] == T7_VEHICLE_MODEL_CONSTANT)
   		return c_string_init("T7");
-	else if(buffer[62] == ID_BUZZ_VEHICLE_MODEL_CONSTANT)
+	else if(buffer[61] == ID_BUZZ_VEHICLE_MODEL_CONSTANT)
 		return c_string_init("ID.BUZZ");
 	else 
 		return c_string_init("NA");
@@ -45,13 +45,13 @@ char * cp_get_vehicle_model(uint8_t * buffer)
 
 char * cp_get_window_id(uint8_t * buffer)
 {
-  return c_string_format("%d", s7lib_parser_read_dword(buffer, 64));
+  return c_string_format("%d", s7lib_parser_read_dword(buffer, 63));
 }
 
 char * cp_get_time_from_primer_application(uint8_t * buffer)
 {
 	if(cp_get_primer_application_enable(buffer) == true)
-		return cp_get_time_string(buffer, 74);
+		return cp_get_time_string(buffer, 73);
 
 	return c_string_init("NA");
 }
@@ -59,7 +59,7 @@ char * cp_get_time_from_primer_application(uint8_t * buffer)
 char * cp_get_primer_detection_with_vision_ok(uint8_t * buffer)
 {
 	if(cp_get_primer_inspection_enable(buffer) == true)
-		return cp_get_flag(buffer, 162, 1, "PASS", "FAIL");
+		return cp_get_flag(buffer, 161, 1, "PASS", "FAIL");
 
 	return c_string_init("NA");
 }
@@ -68,10 +68,10 @@ char * cp_get_bead_check_pass_fail_area(uint8_t * buffer)
 {
 	if(cp_get_primer_inspection_enable(buffer) == true)
 	{
-		return c_string_format("%s-%s-%s-%s", ((buffer[146] & 0b1) ? "PASS" : "FAIL"),
-												((buffer[146] & 0b10) ? "PASS" : "FAIL"),
-												((buffer[146] & 0b100) ? "PASS" : "FAIL"),
-												((buffer[146] & 0b1000) ? "PASS" : "FAIL"));
+		return c_string_format("%s-%s-%s-%s", ((buffer[145] & 0b1) ? "PASS" : "FAIL"),
+												((buffer[145] & 0b10) ? "PASS" : "FAIL"),
+												((buffer[145] & 0b100) ? "PASS" : "FAIL"),
+												((buffer[145] & 0b1000) ? "PASS" : "FAIL"));
 	}
 
 	return c_string_init("NA");
@@ -79,13 +79,13 @@ char * cp_get_bead_check_pass_fail_area(uint8_t * buffer)
 
 char * cp_get_primer_curring_rack(uint8_t * buffer)
 {
-	return c_string_format("%d", s7lib_parser_read_int(buffer, 148));
+	return c_string_format("%d", s7lib_parser_read_int(buffer, 147));
 }
 
 char * cp_get_time_primer_flashoff_complete(uint8_t * buffer)
 {
 	if(cp_get_primer_application_enable(buffer) == true)
-		return cp_get_time_string(buffer, 86);
+		return cp_get_time_string(buffer, 85);
 
 	return c_string_init("NA");
 }
@@ -94,8 +94,8 @@ char * cp_get_interval_from_primering_util_gluing(uint8_t * buffer)
 {
 	if(cp_get_primer_application_enable(buffer) == true)
 	{
-		int * primering_time = cp_get_time(buffer, 74);
-		int * gluing_time = cp_get_time(buffer, 98);
+		int * primering_time = cp_get_time(buffer, 73);
+		int * gluing_time = cp_get_time(buffer, 97);
 
 		uint64_t interval = cp_time_to_seconds(gluing_time) - cp_time_to_seconds(primering_time);
 
@@ -110,24 +110,24 @@ char * cp_get_interval_from_primering_util_gluing(uint8_t * buffer)
 
 char * cp_get_time_from_last_dispense(uint8_t * buffer)
 {
-	return cp_get_time_string(buffer, 134);
+	return cp_get_time_string(buffer, 133);
 }
 
 char * cp_get_timestamp_of_glue_bead_application(uint8_t * buffer)
 {
-	return cp_get_time_string(buffer, 98);
+	return cp_get_time_string(buffer, 97);
 }
 
 char * cp_get_robot_finish_time_glue_bead_application(uint8_t * buffer)
 {
 
-	return cp_get_time_string(buffer, 110);
+	return cp_get_time_string(buffer, 109);
 }
 
 char * cp_get_interval_from_glue_application_util_output(uint8_t * buffer)
 {
-	int * time_from_start_glue_application = cp_get_time(buffer,98);
-	int * assembly_time = cp_get_time(buffer, 122);
+	int * time_from_start_glue_application = cp_get_time(buffer,97);
+	int * assembly_time = cp_get_time(buffer, 121);
 
 	uint64_t interval = cp_time_to_seconds(assembly_time) - cp_time_to_seconds(time_from_start_glue_application);
 
@@ -139,125 +139,125 @@ char * cp_get_interval_from_glue_application_util_output(uint8_t * buffer)
 
 char * cp_get_barrel_expire_ok_a(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 235,0, "nok", "ok");
+	return cp_get_flag(buffer, 234,0, "nok", "ok");
 }
 
 char * cp_get_adhesive_batch_id_a(uint8_t * buffer)
 {
-	return s7lib_parser_read_string(buffer, 196, 16);
+	return s7lib_parser_read_string(buffer, 195, 16);
 }
 
 char * cp_get_adhesive_serial_a(uint8_t * buffer)
 {
-	return s7lib_parser_read_string(buffer, 214, 16);
+	return s7lib_parser_read_string(buffer, 213, 16);
 }
 
 char * cp_get_material_dispensed_a(uint8_t * buffer)
 {
-	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 180)*10.0)/10.0);
+	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 179)*10.0)/10.0);
 }
 
 char * cp_get_pistol_temperature_min_value(uint8_t * buffer)
 {
-	return c_string_format("%d", s7lib_parser_read_int(buffer, 150));
+	return c_string_format("%d", s7lib_parser_read_int(buffer, 149));
 }
 
 char * cp_get_pistol_temperature(uint8_t * buffer)
 {
-	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 172)*10.0)/10.0);
+	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 171)*10.0)/10.0);
 }
 
 char * cp_get_pistol_temperature_max_value(uint8_t * buffer)
 {
-	return c_string_format("%d", s7lib_parser_read_int(buffer, 152));
+	return c_string_format("%d", s7lib_parser_read_int(buffer, 151));
 }
 
 char * cp_get_pot_temperature_min_value_a(uint8_t * buffer)
 {
-	return c_string_format("%d", s7lib_parser_read_int(buffer, 154));
+	return c_string_format("%d", s7lib_parser_read_int(buffer, 153));
 }
 
 char * cp_get_pot_temperature_actual_a(uint8_t * buffer)
 {
-	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 176)*10.0)/10.0);
+	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 175)*10.0)/10.0);
 }
 
 char * cp_get_pot_temperature_max_value_a(uint8_t * buffer)
 {
-	return c_string_format("%d", s7lib_parser_read_int(buffer, 156));
+	return c_string_format("%d", s7lib_parser_read_int(buffer, 155));
 }
 
 char * cp_get_barrel_expire_ok_b(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 275, 0, "nok", "ok");
+	return cp_get_flag(buffer, 274, 0, "nok", "ok");
 }
 
 char * cp_get_adhesive_batch_b(uint8_t * buffer)
 {
-	return s7lib_parser_read_string(buffer, 236, 16);
+	return s7lib_parser_read_string(buffer, 235, 16);
 }
 
 char * cp_get_adhesive_serial_b(uint8_t * buffer)
 {
-	return s7lib_parser_read_string(buffer, 254, 16);
+	return s7lib_parser_read_string(buffer, 253, 16);
 }
 
 char * cp_get_material_dispensed_b(uint8_t * buffer)
 {
-	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 184)*10.0)/10.0);
+	return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 183)*10.0)/10.0);
 }
 
 char * cp_get_application_ratio(uint8_t * buffer)
 {
-	return c_string_format("%.01f:%.01f", floor(s7lib_parser_read_real(buffer, 164)*10.0)/10.0, floor(s7lib_parser_read_real(buffer, 168)*10.0)/10.0);
+	return c_string_format("%.01f:%.01f", floor(s7lib_parser_read_real(buffer, 163)*10.0)/10.0, floor(s7lib_parser_read_real(buffer, 167)*10.0)/10.0);
 }
 
 char * cp_get_mixer_tube_life(uint8_t * buffer)
 {
-	return c_string_format("%d", s7lib_parser_read_dword(buffer, 158));
+	return c_string_format("%d", s7lib_parser_read_dword(buffer, 157));
 }
 
 char * cp_get_robot_completed_cycle_without_fault(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 5, "true", "false");
+	return cp_get_flag(buffer, 161, 5, "true", "false");
 }
 
 char * cp_get_dispense_unit_completed_cycle_without_fault(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 6, "true", "false");
+	return cp_get_flag(buffer, 161, 6, "true", "false");
 }
 
 char * cp_get_rotary_unit_completed_cycle_without_fault(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 162, 7, "true", "false");
+	return cp_get_flag(buffer, 161, 7, "true", "false");
 }
 
 char * cp_get_adhesive_application_complete_summary(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 163, 0, "true", "false");
+	return cp_get_flag(buffer, 162, 0, "true", "false");
 }
 
 bool cp_get_glue_application_inspection_enable(uint8_t * buffer)
 {
-	return s7lib_parser_read_bool(buffer, 162, 3);
+	return s7lib_parser_read_bool(buffer, 161, 3);
 }
 
 char * cp_get_bead_check_laser_sensor(uint8_t * buffer)
 {
 	if(cp_get_glue_application_inspection_enable(buffer) == true)
-		return cp_get_flag(buffer, 162, 2, "PASS", "FAIL");
+		return cp_get_flag(buffer, 161, 2, "PASS", "FAIL");
 
 	return c_string_init("NA");
 }
 
 char * cp_get_humidity(uint8_t * buffer)
 {
-  return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 188)*10.0)/10.0);
+  return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 187)*10.0)/10.0);
 }
 
 char * cp_get_ambient_temperature(uint8_t * buffer)
 {
-  return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 192)*10.0)/10.0);
+  return c_string_format("%.01f", floor(s7lib_parser_read_real(buffer, 191)*10.0)/10.0);
 }
 
 
