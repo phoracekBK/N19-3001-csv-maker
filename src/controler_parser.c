@@ -40,7 +40,7 @@ char * cp_get_vehicle_model(uint8_t * buffer)
 	else if(buffer[61] == ID_BUZZ_VEHICLE_MODEL_CONSTANT)
 		return c_string_init("ID.BUZZ");
 	else 
-		return c_string_init("NA");
+		return c_string_init("NaN");
 }
 
 char * cp_get_window_id(uint8_t * buffer)
@@ -53,28 +53,28 @@ char * cp_get_time_from_primer_application(uint8_t * buffer)
 	if(cp_get_primer_application_enable(buffer) == true)
 		return cp_get_time_string(buffer, 73);
 
-	return c_string_init("NA");
+	return c_string_init("NaN");
 }
 
 char * cp_get_primer_detection_with_vision_ok(uint8_t * buffer)
 {
 	if(cp_get_primer_inspection_enable(buffer) == true)
-		return cp_get_flag(buffer, 161, 1, "PASS", "FAIL");
+		return cp_get_flag(buffer, 161, 1, "true", "false");
 
-	return c_string_init("NA");
+	return c_string_init("NaN");
 }
 
 char * cp_get_bead_check_pass_fail_area(uint8_t * buffer)
 {
 	if(cp_get_primer_inspection_enable(buffer) == true)
 	{
-		return c_string_format("%s-%s-%s-%s", ((buffer[145] & 0b1) ? "PASS" : "FAIL"),
-												((buffer[145] & 0b10) ? "PASS" : "FAIL"),
-												((buffer[145] & 0b100) ? "PASS" : "FAIL"),
-												((buffer[145] & 0b1000) ? "PASS" : "FAIL"));
+		return c_string_format("%s-%s-%s-%s", ((buffer[145] & 0b1) ? "true" : "false"),
+												((buffer[145] & 0b10) ? "true" : "false"),
+												((buffer[145] & 0b100) ? "true" : "false"),
+												((buffer[145] & 0b1000) ? "true" : "false"));
 	}
 
-	return c_string_init("NA");
+	return c_string_init("NaN");
 }
 
 char * cp_get_primer_curring_rack(uint8_t * buffer)
@@ -87,7 +87,7 @@ char * cp_get_time_primer_flashoff_complete(uint8_t * buffer)
 	if(cp_get_primer_application_enable(buffer) == true)
 		return cp_get_time_string(buffer, 85);
 
-	return c_string_init("NA");
+	return c_string_init("NaN");
 }
 
 char * cp_get_interval_from_primering_util_gluing(uint8_t * buffer)
@@ -105,7 +105,7 @@ char * cp_get_interval_from_primering_util_gluing(uint8_t * buffer)
 		return c_string_format("%ld", interval);
 	}	
 
-	return c_string_init("NA");
+	return c_string_init("NaN");
 }
 
 char * cp_get_time_from_last_dispense(uint8_t * buffer)
@@ -139,7 +139,7 @@ char * cp_get_interval_from_glue_application_util_output(uint8_t * buffer)
 
 char * cp_get_barrel_expire_ok_a(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 234,0, "nok", "ok");
+	return cp_get_flag(buffer, 234, 0, "false", "true");
 }
 
 char * cp_get_adhesive_batch_id_a(uint8_t * buffer)
@@ -189,7 +189,7 @@ char * cp_get_pot_temperature_max_value_a(uint8_t * buffer)
 
 char * cp_get_barrel_expire_ok_b(uint8_t * buffer)
 {
-	return cp_get_flag(buffer, 274, 0, "nok", "ok");
+	return cp_get_flag(buffer, 274, 0, "false", "true");
 }
 
 char * cp_get_adhesive_batch_b(uint8_t * buffer)
@@ -245,9 +245,9 @@ bool cp_get_glue_application_inspection_enable(uint8_t * buffer)
 char * cp_get_bead_check_laser_sensor(uint8_t * buffer)
 {
 	if(cp_get_glue_application_inspection_enable(buffer) == true)
-		return cp_get_flag(buffer, 161, 2, "PASS", "FAIL");
+		return cp_get_flag(buffer, 161, 2, "true", "false");
 
-	return c_string_init("NA");
+	return c_string_init("NaN");
 }
 
 char * cp_get_humidity(uint8_t * buffer)

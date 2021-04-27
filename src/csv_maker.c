@@ -87,8 +87,7 @@ static void save_log(char * format, ...)
 	{
 		printf("Can't open log file!\n");
 		fflush(stdout);
-	}
-	
+	}	
 }
 
 bool is_path_valid(char * path)
@@ -172,7 +171,6 @@ void main_loop(s7lib * s7lib_ref, char * path)
 				s7lib_write_bool(s7lib_ref, 0,2, false);
 			}
 			
-
 			fflush(stdout);
     	   	sleep(0.5);
 
