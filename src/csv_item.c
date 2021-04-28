@@ -39,7 +39,7 @@ char * csv_item_get_value(csv_item * self)
 }
 
 void csv_item_finalize_v2(csv_item * self)
-{/*
+{
     if(self != NULL)
     {
         if(self->value != NULL)
@@ -53,7 +53,6 @@ void csv_item_finalize_v2(csv_item * self)
 
         free(self);
     }
-    */
 }
 
 void csv_item_finalize(void * self)
