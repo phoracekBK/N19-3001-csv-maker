@@ -1,3 +1,8 @@
+/*
+** definice datové struktury csv_item
+** skládá se z definice struktury a funkcí, které ze struktury vyčtou požadovaná data
+*/
+
 #include "include/csv_item.h"
 #include <stdio.h>
 
@@ -18,7 +23,7 @@ char * csv_item_get_name(csv_item * self)
 {
     if(self != NULL)
         return self->name;
-    
+
     return "";
 }
 
@@ -45,10 +50,10 @@ void csv_item_finalize_v2(csv_item * self)
         if(self->value != NULL)
             free(self->value);
 
-        if(self->unit != NULL)    
+        if(self->unit != NULL)
             free(self->unit);
 
-        if(self->name != NULL)    
+        if(self->name != NULL)
             free(self->name);
 
         free(self);

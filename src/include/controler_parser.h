@@ -14,10 +14,10 @@ char * cp_get_vehicle_model(uint8_t *);
 char * cp_get_window_id(uint8_t *);
 char * cp_get_time_from_primer_application(uint8_t *);
 char * cp_get_primer_detection_with_vision_ok(uint8_t *);
-char * cp_get_bead_check_pass_fail_area(uint8_t *);
+char * cp_get_primer_check_pass_fail_area(uint8_t *);
 char * cp_get_primer_curring_rack(uint8_t *);
 char * cp_get_time_primer_flashoff_complete(uint8_t *);
-char * cp_get_interval_from_primering_util_gluing(uint8_t *);		
+char * cp_get_interval_from_primering_util_gluing(uint8_t *);
 char * cp_get_time_from_last_dispense(uint8_t *);
 char * cp_get_timestamp_of_glue_bead_application(uint8_t *);
 char * cp_get_robot_finish_time_glue_bead_application(uint8_t *);
@@ -45,6 +45,20 @@ char * cp_get_adhesive_application_complete_summary(uint8_t *);
 char * cp_get_bead_check_laser_sensor(uint8_t *);
 char * cp_get_humidity(uint8_t *);
 char * cp_get_ambient_temperature(uint8_t *);
+char * cp_get_metralight_result(uint8_t * buffer);
+char * cp_get_metralight_zone1_status(uint8_t *);
+char * cp_get_metralight_zone2_status(uint8_t *);
+char * cp_get_metralight_zone3_status(uint8_t *);
+char * cp_get_metralight_zone4_status(uint8_t *);
+char * cp_get_metralight_zone5_status(uint8_t *);
+char * cp_get_metralight_zone6_status(uint8_t *);
+char * cp_get_metralight_zone7_status(uint8_t *);
+char * cp_get_metralight_zone8_status(uint8_t *);
+char * cp_get_metralight_zone9_status(uint8_t *);
+char * cp_get_metralight_zone10_status(uint8_t *);
+char * cp_get_metralight_zone11_status(uint8_t *);
+char * cp_get_metralight_zone12_status(uint8_t *);
 uint64_t cp_time_to_seconds(int *);
+
 
 #endif

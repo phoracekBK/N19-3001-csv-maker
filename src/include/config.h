@@ -5,13 +5,19 @@
 #define RACK 0
 #define SLOT 1
 #define DB_INDEX 18
-#define DB_SIZE 275
+#define DB_SIZE 287
 
 #define CSV_PATH "./"
 #define CSV_NAME "Klebezelle"
 #define CSV_SEPARATOR ';'
 
 #define T7_VEHICLE_MODEL_CONSTANT 7
-#define ID_BUZZ_VEHICLE_MODEL_CONSTANT 73
+#define ID_BUZZ_VEHICLE_MODEL_CONSTANT 1
+
+
+
+
+
+
 
 #endif

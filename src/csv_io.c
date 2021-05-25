@@ -1,5 +1,8 @@
-#include "include/csv_io.h"
+/*
+** generování názvu csv souboru a předpřipravené funkce pro ukládání do souboru
+*/
 
+#include "include/csv_io.h"
 
 
 char * csv_io_generate_csv_name(time_t t, char * csv_path, char * csv_name)
