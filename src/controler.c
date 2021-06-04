@@ -87,6 +87,7 @@ static c_linked_list * controler_compose_csv(uint8_t * buffer)
 {
   c_linked_list * csv_struct = NULL;
 
+
   csv_struct = controler_add_csv_item(csv_struct, c_string_init("JobNummer"), c_string_init(""), cp_get_job_number(buffer));
   csv_struct = controler_add_csv_item(csv_struct, c_string_init("AuftragsNr"), c_string_init(""), cp_get_vehicle_number(buffer));
   csv_struct = controler_add_csv_item(csv_struct, c_string_init("ScheibenType"), c_string_init(""), cp_get_rear_window_type(buffer));
