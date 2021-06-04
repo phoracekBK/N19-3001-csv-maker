@@ -16,9 +16,9 @@
 #include <time.h>
 
 
-#if defined(_WIN32) || defined(_WIN64)
+//#if defined(WIN32) || defined(WIN64)
 #include <windows.h>
-#endif
+//#endif
 
 
 
@@ -230,7 +230,7 @@ void main_loop_silence_mode(s7lib * s7lib_ref, char * path)
 /*
 ** inicializace komunikace s PLC kdy se předává ip adresa pc, číslo racku, slotu a index DB
 ** všechna tato nastavení jsou definována v souboru config.h
-*/ 
+*/
 int main(int argv, char ** argc)
 {
 	s7lib * s7lib_ref = s7lib_new(IP_ADDRESS, RACK, SLOT, DB_INDEX);
