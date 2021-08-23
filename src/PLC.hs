@@ -1,6 +1,6 @@
 module PLC where
 
-import Common
+import HSnap7.Common
 
 
 data PcInterface =

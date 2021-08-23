@@ -6,8 +6,8 @@ import Data.Time.Calendar
 import System.Directory
 import Control.Concurrent
 import System.Environment
-import Common
-import qualified Client as Cli
+import HSnap7.Common
+import qualified HSnap7.Client as Cli
 import PLC
 import CSV
 --sdeka,srajče,sesqintan,sestrom,sklobása,spousta slavných slov se s snasa sps: sesqintan je spušten kolmo k zemi
